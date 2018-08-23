@@ -1,0 +1,122 @@
+注意事项:
+
+    1.Config.gradle
+        在AndroidStudio中使用多Module的时候,每个Module下都会生成build.gradle文件,每个build.gradle文件都有
+        自己的一套sdk版本和依赖,这如果被其他同事使用的话,需要知道每个build.gradle的版本依次解决,这样总感觉麻烦。
+        所以,使用config.gradle统一管理自己项目下的版本号、签名、appId和依赖等,是非常清晰的管理自己的Module 。
+
+        1).在项目根目录的Gradle下添加  apply from: "config.gradle"
+        2).用法：rootProject.ext.自定义类名字["自定义的名字"]
+
+    2.
+
+    /**
+         * 开发规范：
+         *
+         *        1、activity定义类。                     如：LoginActivity
+         *
+         *        2、fragment定义类。                     如：HomeFragment
+         *
+         *        3、adapter包下适配器定义。               如：LoginAdapter
+         *
+         *        4、entity包下包装类定义。                如：LoginEntity
+         *
+         *        5、map包下的engine包接口View类定义。      如：LoginView
+         *
+         *        6、map包下的presenter包请求逻辑类。       如：LoginPresenter
+         *
+         *        7、database包下数据库。                  如：FriendDataEntry
+         *
+         *    注：其他类遵守Android统一开发规范
+         *
+         * */
+
+
+        /**
+         * 项目结构：
+         *        1、activity包：
+         *              下面都有3个子包，用于存放3个 fragment 下新建的activity资源类,其他新建在外
+         *
+         *        2、adapter包：
+         *              适配器
+         *
+         *        3、application包
+         *              (你懂得)
+         *
+         *        4、base包
+         *              activity 和 fragment 的基类
+         *
+         *        5、constant包
+         *              常量类、URL拼接存放类
+         *
+         *        6、entitty包
+         *              下面都有3个子包，用于存放3个 fragment 下新建的activity资源类，其他新建在外
+         *
+         *        7、fragment包
+         *              (你懂得)
+         *
+         *        8、map包
+         *              A、engine包存放 activity、fragment的界面 View接口
+         *              B、presenter包存放 activity、fragment的请求交互逻辑
+         *              C、presenter基类
+         *              D、被activity、fragment继承的MvpActivity、MvpFragment基类
+         *
+         *        9、receiver包
+         *              (你懂得)
+         *
+         *        10、rxjava包
+         *              创建okhhttp3请求的实例，及绑定的加载动画和相应的接口实现
+         *
+         *        11、utils包
+         *              (你懂得)
+         *
+         *        12、views包
+         *              自定义View
+         *
+         *        13、database
+         *              orm数据库
+         *
+         * */
+
+
+        /**
+         * 项目开发流程：
+         * 1、activity
+         *
+         *      A、所有 activity 都需继承 MvpActivity
+         *
+         *      B、MvpActivity的定义泛型 (在map包下的 presenter包中构造一个presenter类)
+         *
+         *          a、构造的presenter需继承Basepresenter,并拿到请求的实例调用封装的参数发起请求
+         *                  movieService = AppClient.retrofit().create(MovieService.class);
+         *
+         *      D、当前activity的 View接口按钮定义的点击实现 (在map包下的 engine包中构造一个view类)
+         *
+         *          a、构造的view接口类需继承BaseAppView,
+         *
+         *
+         *
+         *
+         *   activity中重写方法说明：
+         *
+         *      A、实例化presenter对象
+         *          protected SplashPresenter createPresenter(){}
+         *
+         *      B、处理当前页面状态栏颜色
+         *          protected void onCreateBefore(){}
+         *
+         *      C、加载xml文件，注册 ButterKnife ------2件事
+         *          protected void setupViews(){}
+         *
+         *      D、 注册监听
+         *          protected void setListener()
+         *
+         *      E、当前账号被占用时提示并跳转登录页
+         *          public void toLoginMotion()
+         *
+         * */
+         
+         
+         
+         
+       
