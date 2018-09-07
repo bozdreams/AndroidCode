@@ -1,4 +1,0 @@
-<resources>
-    <!-- Default screen margins, per the Android Design guidelines.顶部状态栏高度 -->
-    <dimen name="statusbar_view_height">@dimen/dp_25</dimen>
-</resources>

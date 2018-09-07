@@ -1,5 +1,6 @@
 ext {
-    android = [
+    //Android配置
+    androidConfig = [
             minSdkVersion            : 21,//最小版本号
             compileSdkVersion        : 28,//编译版本号
             targetSdkVersion         : 28,//目标版本号
@@ -8,12 +9,32 @@ ext {
             buildToolsVersion        : "27.0.2",//创建版本号
             applicationId            : 'com.example',//项目包名
             multiDexEnabled          : true,//解决64K方法数限制
+            appName                  : 'AndroidCode',
             flavorDimensions         : "versionCode",//意思就是flavor dimension 它的维度就是该版本号，这样维度就是都是统一的了
             testInstrumentationRunner: 'android.support.test.runner.AndroidJUnitRunner',
     ]
 
-    dependencies = [
-            "appcompat"         : "com.android.support:appcompat-v7:28.0.0-rc01",
+    //版本号配置
+    versionConfig = [
+            gradle       : '3.1.3',
+            kotlin       : '1.2.30',
+            support      : '28.0.0-rc02',
+            gson         : '2.8.2',
+            glide        : '4.7.1',
+            leakcanary   : '1.5.4',
+            retrofit     : '2.4.0',
+            free_proguard: '0.0.7',
+            junit        : '4.12',
+            robolectric  : '3.1.2'
+    ]
+
+    //网络库或本地库配置
+    dependConfig = [
+            support             : [
+                    appcompat_v7: "com.android.support:appcompat-v7:$versionConfig.support",
+                    design      : "com.android.support:design:$versionConfig.support",
+            ],
+            "appcompat"         : "com.android.support:appcompat-v7:$versionConfig.support",
             "espresso"          : "com.android.support.test.espresso:espresso-core:3.0.1",
             "runner"            : "com.android.support.test:runner:1.0.1",
             "constraint"        : "com.android.support.constraint:constraint-layout:1.1.0",
@@ -43,4 +64,306 @@ ext {
             "jsbridge"          : "com.github.lzyzsd:jsbridge:1.0.4",//JsBridge
             "zxing"             : "com.github.maning0303:MNZXingCode:V1.1.3",//扫描二维码
     ]
+
+    configAndroidDomain = this.&configAndroidDomain
+    //主项目下的Dependencies
+    configAppDependencies = this.&configAppDependencies
+    //CommonLib下的Dependencies
+    configCommonDependencies = this.&configCommonDependencies
+    //Lib下的Dependencies
+    configSubUtilDependencies = this.&configSubUtilDependencies
+}
+
+//判断是不是主项目还是Lib
+def configAndroidDomain(Project pro) {
+    if (pro.plugins.hasPlugin("com.android.application")) {
+        configAppAndroidDomain(pro)
+    } else {
+        configLibAndroidDomain(pro)
+    }
+}
+
+//主项目的Gradle配置
+def configAppAndroidDomain(Project pro) {
+    pro.android {
+        compileSdkVersion androidConfig.compileSdkVersion
+        defaultConfig {
+            applicationId "com.bozdreams"
+            minSdkVersion 21
+            targetSdkVersion 28
+            versionCode 1
+            versionName "1.0"
+            //解决65535限制
+            multiDexEnabled true
+            //意思就是flavor dimension 它的维度就是该版本号，也可以设置多维度
+            flavorDimensions "versionCode"
+            // AndroidManifest.xml 里面UMENG_CHANNEL的value为 ${UMENG_CHANNEL_VALUE}，添加一个默认渠道号
+            manifestPlaceholders = [UMENG_CHANNEL_VALUE: "umeng"]
+            //执行单元测试时指定的Runner，在正式打包时并不会使用到
+            testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        }
+        //配置签名
+        configSigning(pro)
+        //配置状态
+        configBuildTypes(pro)
+        //配置多渠道
+        configProductFlavors(pro)
+        //配置状态
+        configOther(pro)
+    }
+}
+
+//Lib的Gradle配置
+def configLibAndroidDomain(Project pro) {
+    pro.android {
+        compileSdkVersion androidConfig.compileSdkVersion
+        defaultConfig {
+            minSdkVersion androidConfig.minSdkVersion
+            versionCode androidConfig.versionCode
+            versionName androidConfig.versionName
+        }
+
+        buildTypes {
+            release {
+                minifyEnabled false
+                consumerProguardFiles 'proguard-rules.pro'
+                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            }
+        }
+
+        lintOptions {
+            abortOnError false
+            checkReleaseBuilds false
+        }
+    }
+}
+
+//配置签名
+def configSigning(Project pro) {
+    File signPropertiesFile = file('sign/sign.properties')
+    if (!signPropertiesFile.exists()) return
+    pro.android {
+        Properties properties = new Properties()
+        properties.load(new FileInputStream(signPropertiesFile))
+        signingConfigs {
+            debug {
+                keyAlias properties['keyAlias']
+                keyPassword properties['keyPassword']
+                storeFile file(properties['storeFile'])
+                storePassword properties['storePassword']
+            }
+
+            release {
+                keyAlias properties['keyAlias']
+                keyPassword properties['keyPassword']
+                storeFile file(properties['storeFile'])
+                storePassword properties['storePassword']
+            }
+        }
+    }
+}
+
+//配置状态
+def configBuildTypes(Project pro) {
+    pro.android {
+        buildTypes {
+            //测试版本
+            debug {
+                //可以调试
+                debuggable true
+                //Jni可调试
+                jniDebuggable true
+                //是否开启混淆
+                minifyEnabled false
+                //压缩对齐，提高运行时的效率，也可以使用zipAlignEnabled true
+                zipAlignEnabled false
+                //渲染脚本可调试
+                renderscriptDebuggable true
+                //指定签名文件的配置，不指定则使用SDK中默认的debug签名
+                signingConfig signingConfigs.debug
+                //是否打开Log日志，true打开，false关闭
+                buildConfigField "boolean", "LOG_ON", "true"
+                //混淆文件
+                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            }
+
+            //正式版本
+            release {
+                debuggable false
+                minifyEnabled true
+                jniDebuggable false
+                zipAlignEnabled true
+                renderscriptDebuggable false
+                signingConfig signingConfigs.release
+                buildConfigField "boolean", "LOG_ON", "false"
+                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            }
+        }
+    }
+}
+
+//配置多渠道
+def configProductFlavors(pro) {
+    //多渠道配置，每个渠道可单独设置defaultConfig目录下的字段
+    pro.android {
+        productFlavors {
+            dev {
+                resValue "string", "app_name", "AndroidTest"
+                buildConfigField "String", "API_URL", '"http://www.jinshw.com/"'
+            }
+            online {
+                resValue "string", "app_name", "AndroidCode"
+                buildConfigField "String", "API_URL", '"http://www.jinshw.com/"'
+            }
+            google {
+                //给每个渠道设置不同的包名,这个是在defaultConfig中的applicationId加后缀
+                applicationIdSuffix ".google"
+                //给每个渠道设置不同的App名字
+                resValue "string", "app_name", "AndroidGoogle"
+                //给每个渠道设置不同的后台地址，如果相同就在 buildTypes{}里设置
+                buildConfigField 'String', 'API_URL', '"http://www.baidu.com"'
+            }
+        }
+
+        //配置APK名字
+        productFlavors.all {
+            flavor -> flavor.manifestPlaceholders = [UMENG_CHANNEL_VALUE: name]
+        }
+
+        //输出自定义APK包名
+        applicationVariants.all { variant ->
+            variant.outputs.all { output ->
+                def outputFile = output.outputFile
+                if (outputFile != null && outputFile.name.endsWith('.apk')) {
+                    def fileName
+                    if (variant.buildType.name == "release") {
+                        fileName = "${variant.productFlavors[0].name}_V${variant.versionName}_${releaseTime().replace("-", "_")}.apk"
+                    } else {
+                        fileName = "debug_${releaseTime().replace("-", "_")}.apk"
+                    }
+                    outputFileName = fileName
+                }
+            }
+        }
+
+        //移除不需要打包的Apk
+        variantFilter { variant ->
+            //对于Flavors类型为dev的并且编译类型为Release构建类型的不用编译,意思就是对Dev维度下的Release版本不打包
+            if ((variant.buildType.name == 'release') && (variant.getFlavors().get(0).name == 'dev')) {
+                variant.setIgnore(true)
+            }
+        }
+    }
+}
+
+//其他配置
+def configOther(Project pro) {
+    pro.android {
+        //配置Lint检查
+        lintOptions {
+            abortOnError false
+            checkReleaseBuilds false
+        }
+
+        //闭包用于构建只支持特定屏幕像素密度或ABI的Android设备的apk
+        splits {
+            //屏幕密度分割设置
+            density {
+                //是否拆分
+                enable true
+                // 把这些密度排除在分裂之外
+                exclude "ldpi", "mdpi"
+            }
+        }
+
+        //加载资源
+        sourceSets {
+            //在main目录下，加载assets，jni，jniLibs的目录
+            main {
+                assets.srcDirs = ['assets']
+                jni.srcDirs 'src/main/jni'
+                jniLibs.srcDir 'src/main/jniLibs'
+            }
+        }
+
+        //打包时的相关配置。当项目中依赖的第三方库越来越多时，有可能会出现两个依赖库中存在同一个（名称）文件。
+        //如果这样，Gradle在打包时就会提示错误（警告）。那么就可以根据提示，然后使用以下方法将重复的文件剔除。
+        packagingOptions {
+            //解决Rxjava冲突
+            exclude 'META-INF/rxjava.properties'
+        }
+
+        //增加java1.8可以使用Lambda表达式
+        compileOptions {
+            sourceCompatibility JavaVersion.VERSION_1_8
+            targetCompatibility JavaVersion.VERSION_1_8
+        }
+
+        //解决限制
+        dexOptions {
+            javaMaxHeapSize "4g"
+            preDexLibraries = false
+        }
+
+        //解决与依赖com.google.code.findbugs:jsr305的冲突
+        pro.configurations.all {
+            resolutionStrategy.force 'com.google.code.findbugs:jsr305:3.0.2'
+        }
+
+        //DataBinding设置
+        dataBinding {
+            enabled true
+        }
+    }
+}
+
+//主项目的Dependencies配置
+def configAppDependencies(Project pro) {
+    pro.dependencies {
+        implementation fileTree(include: ['*.jar'], dir: 'libs')
+        //noinspection GradleCompatible
+        implementation 'com.android.support:appcompat-v7:28.0.0-rc02'
+        implementation 'com.android.support:recyclerview-v7:28.0.0-rc02'
+        implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+        testImplementation 'junit:junit:4.12'
+        //noinspection GradleCompatible
+        androidTestImplementation 'com.android.support.test:runner:1.0.2'
+        androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+        // 编译CommonSDK模块，但是去掉此模块中对com.android.support的依赖，防止重复依赖报错
+        implementation(project(':common_Library')) {
+            exclude group: 'com.android.support', module: 'appcompat-v7'
+        }
+        implementation 'com.jakewharton:butterknife:8.8.1'
+        annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+        implementation 'com.github.LuckSiege.PictureSelector:picture_library:v2.2.3'
+        implementation 'io.reactivex.rxjava2:rxjava:2.2.1'
+        implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
+        implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+        implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
+        implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
+        implementation 'com.jakewharton.rxbinding2:rxbinding:2.1.1'
+        implementation 'com.umeng.sdk:common:1.5.0'
+        implementation 'com.umeng.sdk:analytics:7.5.3'
+        implementation 'com.android.support:multidex:1.0.3'
+    }
+}
+
+//Lib的Dependencies配置
+def configCommonDependencies(Project pro) {
+    pro.dependencies {
+        compileOnly dependConfig.support.appcompat_v7
+//        compileOnly dependConfig.support.design
+
+//        api dependConfig.gson
+//        api(dependConfig.glide) {
+//            exclude group: "com.android.support"
+//        }
+
+//        testImplementation dependConfig.junit
+//        testImplementation dependConfig.robolectric
+    }
+}
+
+static def releaseTime() {
+    return new Date().format("MM-dd", TimeZone.getTimeZone("UTC"))
 }

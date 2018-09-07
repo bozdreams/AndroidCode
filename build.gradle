@@ -1,29 +1,45 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 apply from: "config.gradle"
 buildscript {
-    
+
     repositories {
         google()
         jcenter()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.1.4'
-        
 
+        classpath 'com.jakewharton:butterknife-gradle-plugin:8.8.1'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
 }
 
+//为所有的工程的Repositories配置为Jcenter
 allprojects {
     repositories {
         google()
         jcenter()
+        mavenCentral()
         maven { url 'https://maven.google.com' }
         maven { url 'https://jitpack.io' }
     }
+
+    //导入依赖与当前版本不兼容解决方法，强制版本一样
+    configurations.all {
+        resolutionStrategy.eachDependency {
+            DependencyResolveDetails details ->
+                def requested = details.requested
+                if (requested.group == 'com.android.support') {
+                    if (!requested.name.startsWith("multidex")) {
+                        details.useVersion '28.0.0-rc02'
+                    }
+                }
+        }
+    }
 }
 
+//执行清除Project的Output文件的任务
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
