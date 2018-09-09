@@ -278,12 +278,12 @@ def configOther(Project pro) {
             checkReleaseBuilds false
         }
 
-        //闭包用于构建只支持特定屏幕像素密度或ABI的Android设备的apk
+        //闭包用于构建只支持特定屏幕像素密度或ABI的Android设备的apk,暂时不需要此属性
         splits {
             //屏幕密度分割设置
             density {
                 //是否拆分
-                enable true
+                enable false
                 //如果true，Gradle除了per-ABI APK之外还会生成通用APK。通用APK包含单个APK中所有ABI的代码和资源。
                 // 默认值为false。请注意，此选项仅在splits.abi块中可用。在根据屏幕密度构建多个APK时，
                 // Gradle始终会生成一个通用APK，其中包含所有屏幕密度的代码和资源。
