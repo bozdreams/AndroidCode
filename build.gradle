@@ -25,16 +25,18 @@ allprojects {
         maven { url 'https://jitpack.io' }
     }
 
-    //导入依赖与当前版本不兼容解决方法，强制版本一样
     configurations.all {
+        //每隔1分钟检查远程依赖是否存在更新
+        resolutionStrategy.cacheChangingModulesFor 1, 'minutes'
+        // 采用动态版本声明的依赖缓存0分钟
+//        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+
+        //导入依赖与当前版本不兼容解决方法，强制版本一样
         resolutionStrategy.eachDependency {
-            DependencyResolveDetails details ->
-                def requested = details.requested
-                if (requested.group == 'com.android.support') {
-                    if (!requested.name.startsWith("multidex")) {
-                        details.useVersion '28.0.0-rc02'
-                    }
-                }
+            if (it.requested.group == 'com.android.support'
+                    && !it.requested.name.contains('multidex')) {
+                it.useVersion versionConfig.support
+            }
         }
     }
 }
