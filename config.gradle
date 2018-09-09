@@ -1,7 +1,7 @@
 ext {
-    //Android配置
+    //Android基本配置
     androidConfig = [
-            applicationId    : 'com.bozdreams',//项目包名
+            applicationId    : "com.bozdreams",//项目包名
             compileSdkVersion: 28,//编译版本号
             minSdkVersion    : 21,//最小版本号
             targetSdkVersion : 28,//目标版本号
@@ -251,7 +251,6 @@ def configProductFlavors(pro) {
                     def fileName
                     if (variant.buildType.name == "release") {
                         fileName = "${variant.productFlavors[0].name}_V${variant.versionName}_${releaseTime().replace("-", "_")}.apk"
-
                     } else {
                         fileName = "debug_${releaseTime().replace("-", "_")}.apk"
                     }
@@ -285,6 +284,10 @@ def configOther(Project pro) {
             density {
                 //是否拆分
                 enable true
+                //如果true，Gradle除了per-ABI APK之外还会生成通用APK。通用APK包含单个APK中所有ABI的代码和资源。
+                // 默认值为false。请注意，此选项仅在splits.abi块中可用。在根据屏幕密度构建多个APK时，
+                // Gradle始终会生成一个通用APK，其中包含所有屏幕密度的代码和资源。
+//                universalApk true
                 // 把这些密度排除在分裂之外
                 exclude "ldpi", "mdpi"
             }
@@ -380,6 +383,8 @@ def configCommonDependencies(Project pro) {
     }
 }
 
+//时间格式化
 static def releaseTime() {
     return new Date().format("MM-dd", TimeZone.getTimeZone("UTC"))
 }
+

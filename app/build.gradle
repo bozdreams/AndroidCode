@@ -1,4 +1,5 @@
 //plugins {id "com.android.application"}
 apply plugin: 'com.android.application'
+
 configAndroidDomain project
 configAppDependencies project

@@ -2,7 +2,9 @@ package com.bozdreams;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
@@ -21,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String SERVE_URL = BuildConfig.API_URL;
     public static final boolean DEBUG = BuildConfig.LOG_ON;
 
+    @RequiresApi(api = Build.VERSION_CODES.DONUT)
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {

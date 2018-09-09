@@ -1,5 +1,8 @@
 注意事项:
 
+    //清除Gradle构建缓存
+    ./gradlew cleanBuildCache
+
     1.Config.gradle
         在AndroidStudio中使用多Module的时候,每个Module下都会生成build.gradle文件,每个build.gradle文件都有
         自己的一套sdk版本和依赖,这如果被其他同事使用的话,需要知道每个build.gradle的版本依次解决,这样总感觉麻烦。

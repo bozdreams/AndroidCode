@@ -1,6 +1,7 @@
 package com.bozdreams.application;
 
 
+import android.app.Application;
 import android.content.Context;
 import android.support.multidex.MultiDex;
 import android.support.multidex.MultiDexApplication;
@@ -21,8 +22,9 @@ import com.umeng.commonsdk.UMConfigure;
 public class AndroidCodeApplication extends MultiDexApplication {
 
     private static AndroidCodeApplication application;
-    public static boolean isRefresh = false;
 
+    //方式一：直接 extends MultiDexApplication
+    //方式二：extends OtherApplication 需要实现attachBaseContext方法
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
@@ -33,7 +35,7 @@ public class AndroidCodeApplication extends MultiDexApplication {
     public void onCreate() {
         super.onCreate();
         application = this;
-        UMConfigure.init(this, UMConfigure.DEVICE_TYPE_PHONE,"");
+        UMConfigure.init(this, UMConfigure.DEVICE_TYPE_PHONE, "");
     }
 
     public static AndroidCodeApplication getInstance() {
